@@ -1,5 +1,11 @@
 # @tnjobber/common
 
+## 0.0.4
+
+### Patch Changes
+
+- declare type queu
+
 ## 0.0.3
 
 ### Patch Changes
