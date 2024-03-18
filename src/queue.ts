@@ -1,5 +1,6 @@
 import amqplib, { Channel, Connection, Message } from "amqplib";
 export type ExchangeType = "direct" | "topic" | "fanout";
+export type { Channel, Message, Connection };
 
 export abstract class Publish {
   abstract exchangeName: string;
@@ -42,7 +43,7 @@ export abstract class Subscribe {
   abstract exchangeName: string;
   abstract exchangeType: ExchangeType;
   abstract routingKeySub: string | string[];
-  abstract onMessage(msg: Message): void;
+  abstract onMessage(msg: Message): Promise<void>;
 
   queueName: string;
 
@@ -74,9 +75,9 @@ export abstract class Subscribe {
       );
     }
 
-    await this.channel.consume(queue, (msg) => {
+    await this.channel.consume(queue, async (msg) => {
       if (!msg) return;
-      this.onMessage(msg);
+      await this.onMessage(msg);
     });
   }
 }
@@ -101,7 +102,7 @@ export abstract class SendQuere {
 export abstract class ReceiveQuere {
   protected channel: Channel;
   abstract queueName: string;
-  abstract onMessage(msg: Message): void;
+  abstract onMessage(msg: Message): Promise<void>;
 
   constructor(channel: Channel) {
     this.channel = channel;
@@ -109,9 +110,9 @@ export abstract class ReceiveQuere {
 
   async listenToQueue() {
     await this.channel.assertQueue(this.queueName, { durable: true });
-    await this.channel.consume(this.queueName, (msg) => {
+    await this.channel.consume(this.queueName, async (msg) => {
       if (!msg) return;
-      this.onMessage(msg);
+      await this.onMessage(msg);
     });
   }
 }
